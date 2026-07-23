@@ -80,9 +80,21 @@ else if (input_keyboard == 3)
 }
 else if (input_keyboard == 4)
 {
-    Console.Clear();
-    Console.WriteLine("Generátor hesel zatím není implementován.");
-    Console.WriteLine("Stiskněte klávesu pro návrat do menu...");
+    Console.BackgroundColor = ConsoleColor.White; // Bílé pozadí
+    Console.ForegroundColor = ConsoleColor.Black; // Černý text
+    Console.Clear(); // Přemaluje celou obrazovku na bílo
+
+    Console.Write("Délka hesla: ");
+    int len = int.Parse(Console.ReadLine());
+
+    string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%*€|\";
+    Random r = new();
+    string pass = "";
+
+    for (int i = 0; i < len; i++) pass += chars[r.Next(chars.Length)];
+
+    Console.WriteLine($"Tvoje heslo: {pass}");
+    Console.ResetColor(); // Vrátí původní barvy konzole (např. černou a bílou)
     Console.ReadKey(true);
     goto gargamel;
 }
