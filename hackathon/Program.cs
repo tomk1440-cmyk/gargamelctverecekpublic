@@ -30,7 +30,7 @@ Console.ReadKey();
 gargamel:
 Console.Clear();
 Console.WriteLine("Vyberte jednu z možností");
-Console.WriteLine("1) Gambling center      2) Kačka Kalkulačka dluhů\n3) Počasí               4) Generátor hesel\n5) Kalkulačka měny      6) Guess the number\n7) Crossy Road");
+Console.WriteLine("1) Gambling center      2) Kačka Kalkulačka dluhů\n3) Počasí               4) Generátor hesel\n5) Kalkulačka měny      6) Guess the number\n7) Crossy Road          8) Konec");
 
 char key = Console.ReadKey(true).KeyChar;
 int input_keyboard = key - '0';
@@ -228,6 +228,10 @@ else if (input_keyboard == 7)
         Thread.Sleep(10);
     }
 
+}
+else if (input_keyboard == 8)
+{
+    Console.WriteLine("Nazdar");
 }
 else
 {
