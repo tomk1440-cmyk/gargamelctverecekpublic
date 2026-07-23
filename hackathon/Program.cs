@@ -30,7 +30,7 @@ Console.ReadKey();
 gargamel:
 Console.Clear();
 Console.WriteLine("Vyberte jednu z možností");
-Console.WriteLine("1) Gambling center      2) Kačka Kalkulačka dluhů\n3) Počasí               4) Generátor hesel\n5) Kalkulačka konverze měny");
+Console.WriteLine("1) Gambling center      2) Kačka Kalkulačka dluhů\n3) Počasí               4) Generátor hesel\n5) Kalkulačka měny      6) Guess the number\n7) Crossy Road");
 
 char key = Console.ReadKey(true).KeyChar;
 int input_keyboard = key - '0';
@@ -122,6 +122,7 @@ else if (input_keyboard == 5)
         Console.WriteLine($"Dostaneš: {czk * kurz:F2} {mena}");
         Console.WriteLine("Stiskněte klávesu pro návrat do menu...");
         Console.ReadKey(true);
+        Console.ResetColor();
         goto gargamel;
         
     }
@@ -135,13 +136,98 @@ else if (input_keyboard == 5)
 }
 else if (input_keyboard == 6)
 {
-    Console.WriteLine("Konec.");
-    return;
+    Console.BackgroundColor = ConsoleColor.White; Console.ForegroundColor = ConsoleColor.Black;
+
+// Tady začíná tvoje hra
+    int secret = new Random().Next(1, 101), pokusy = 7; bool vyhra = false;
+    Console.Clear(); Console.WriteLine("Myslím si číslo od 1 do 100. Máš 7 pokusů.");
+
+    while (pokusy > 0)
+    {
+        Console.Write($"Tvůj tip (zbývá {pokusy}): ");
+        int tip = int.Parse(Console.ReadLine()); pokusy--;
+
+        if (tip == secret) { Console.WriteLine("Správně! Vyhrál jsi."); vyhra = true; break; }
+        Console.WriteLine(tip < secret ? "VÍC!" : "MÍŇ!");
+    }
+
+    if (!vyhra) Console.WriteLine($"Prohra! Číslo bylo: {secret}");
+
+// Výběr akce po skončení hry
+    Console.Write("\n[1] Hrát znovu | [2] Návrat do menu: ");
+    string volba = Console.ReadLine();
+
+    if (volba == "2") goto gargamel;
+// Pokud zadá 1 (nebo cokoliv jiného), program normálně pokračuje dál (např. do dalšího cyklu)
 }
 else if (input_keyboard == 7)
 {
-    Console.WriteLine("Konec.");
-    return;
+    Console.CursorVisible = false;
+
+    menu:
+    Console.Clear();
+    Console.WriteLine("=== CROSSY ROAD ===\n1 - Hrat\n2 - Konec");
+    char volba = Console.ReadKey(true).KeyChar;
+    if (volba == '2') return;
+    if (volba != '1') goto menu;
+
+    hra:
+    int W = 20, H = 10, hX = 10, hY = 9, pocitadlo = 0;
+    int[] auta = new int[8];
+    Random rnd = new Random();
+    for (int i = 0; i < 8; i++) auta[i] = rnd.Next(0, W);
+
+    Console.Clear();
+    while (true)
+    {
+        if (Console.KeyAvailable)
+        {
+            ConsoleKey k = Console.ReadKey(true).Key;
+            if (k == ConsoleKey.W && hY > 0) hY--;
+            if (k == ConsoleKey.S && hY < H - 1) hY++;
+            if (k == ConsoleKey.A && hX > 0) hX--;
+            if (k == ConsoleKey.D && hX < W - 1) hX++;
+            if (k == ConsoleKey.R) goto hra;
+            if (k == ConsoleKey.M) goto menu;
+        }
+
+        if (++pocitadlo >= 25)
+        {
+            for (int i = 0; i < 8; i++) auta[i] = (auta[i] + 1) % W;
+            pocitadlo = 0;
+        }
+
+        if (hY > 0 && hY < H - 1 && hX == auta[hY - 1])
+        {
+            Console.Clear();
+            Console.WriteLine("Prohra!\nStiskni R pro restart, nebo cokoliv jineho pro Menu.");
+            if (Console.ReadKey(true).Key == ConsoleKey.R) goto hra;
+            goto menu;
+        }
+        if (hY == 0)
+        {
+            Console.Clear();
+            Console.WriteLine("Vyhra!\nStiskni R pro restart, nebo cokoliv jineho pro Menu.");
+            if (Console.ReadKey(true).Key == ConsoleKey.R) goto hra;
+            goto menu;
+        }
+
+        Console.SetCursorPosition(0, 0);
+        for (int y = 0; y < H; y++)
+        {
+            for (int x = 0; x < W; x++)
+            {
+                if (x == hX && y == hY) Console.Write("O");
+                else if (y == 0) Console.Write("=");
+                else if (y == H - 1) Console.Write(".");
+                else Console.Write(x == auta[y - 1] ? ">" : " ");
+            }
+            Console.WriteLine();
+        }
+        Console.WriteLine("--------------------\nWASD = Pohyb | R = Restart | M = Menu");
+        Thread.Sleep(10);
+    }
+
 }
 else
 {
