@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Json;
 
 string soubor = "penize.txt";
 int penize;
@@ -29,7 +30,7 @@ Console.ReadKey();
 gargamel:
 Console.Clear();
 Console.WriteLine("Vyberte jednu z možností");
-Console.WriteLine("1) Gambling center      2) Kačka Kalkulačka dluhů\n3) Počasí               4) Generátor hesel\n5) Exit");
+Console.WriteLine("1) Gambling center      2) Kačka Kalkulačka dluhů\n3) Počasí               4) Generátor hesel\n5) Kalkulačka konverze měny");
 
 char key = Console.ReadKey(true).KeyChar;
 int input_keyboard = key - '0';
@@ -80,25 +81,64 @@ else if (input_keyboard == 3)
 }
 else if (input_keyboard == 4)
 {
-    Console.BackgroundColor = ConsoleColor.White; // Bílé pozadí
-    Console.ForegroundColor = ConsoleColor.Black; // Černý text
-    Console.Clear(); // Přemaluje celou obrazovku na bílo
+    Console.Write("Password length: ");
+    int length = int.Parse(Console.ReadLine());
 
-    Console.Write("Délka hesla: ");
-    int len = int.Parse(Console.ReadLine());
+    string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-+=<>?";
 
-    string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%*€|\";
     Random r = new();
-    string pass = "";
+    string password = "";
 
-    for (int i = 0; i < len; i++) pass += chars[r.Next(chars.Length)];
+    for (int i = 0; i < length; i++)
+    {
+        password += chars[r.Next(chars.Length)];
+    }
 
-    Console.WriteLine($"Tvoje heslo: {pass}");
+    Console.WriteLine("\nPassword: " + password);
     Console.ResetColor(); // Vrátí původní barvy konzole (např. černou a bílou)
     Console.ReadKey(true);
     goto gargamel;
 }
 else if (input_keyboard == 5)
+{
+    string apiKey = "3d8032271d485861d8802202";
+    Console.Write("Částka v Kč: ");
+    double czk = double.Parse(Console.ReadLine());
+
+    Console.Write("Měna (např. EUR, USD, GBP...): ");
+    string mena = Console.ReadLine().ToUpper();
+
+    using HttpClient client = new HttpClient();
+    string url = $"https://v6.exchangerate-api.com/v6/{apiKey}/latest/CZK";
+
+    string json = await client.GetStringAsync(url);
+    using JsonDocument doc = JsonDocument.Parse(json);
+    var rates = doc.RootElement.GetProperty("conversion_rates");
+
+    if (rates.TryGetProperty(mena, out JsonElement rateElement))
+    {
+        double kurz = rateElement.GetDouble();
+        Console.ForegroundColor = ConsoleColor.Blue;
+        Console.WriteLine($"Dostaneš: {czk * kurz:F2} {mena}");
+        Console.WriteLine("Stiskněte klávesu pro návrat do menu...");
+        Console.ReadKey(true);
+        goto gargamel;
+        
+    }
+    else
+    {
+        Console.WriteLine("Neznámá měna!");
+        Console.WriteLine("Stiskněte klávesu pro návrat do menu...");
+        Console.ReadKey(true);
+        goto gargamel;
+    }
+}
+else if (input_keyboard == 6)
+{
+    Console.WriteLine("Konec.");
+    return;
+}
+else if (input_keyboard == 7)
 {
     Console.WriteLine("Konec.");
     return;
