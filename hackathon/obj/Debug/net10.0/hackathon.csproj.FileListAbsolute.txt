@@ -1,0 +1,6 @@
+C:\Users\Tomas\RiderProjects\hackathon\hackathon\obj\Debug\net10.0\hackathon.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Tomas\RiderProjects\hackathon\hackathon\obj\Debug\net10.0\hackathon.AssemblyInfoInputs.cache
+C:\Users\Tomas\RiderProjects\hackathon\hackathon\obj\Debug\net10.0\hackathon.AssemblyInfo.cs
+C:\Users\Tomas\RiderProjects\hackathon\hackathon\obj\Debug\net10.0\hackathon.csproj.CoreCompileInputs.cache
+C:\Users\Tomas\RiderProjects\hackathon\hackathon\obj\Debug\net10.0\hackathon.dll
+C:\Users\Tomas\RiderProjects\hackathon\hackathon\obj\Debug\net10.0\hackathon.pdb
