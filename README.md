@@ -28,13 +28,11 @@ Aplikace obsahuje natvrdo zapsané API klíče pro:
 - **OpenWeatherMap** (`https://api.openweathermap.org`) — pro funkci Počasí
 - **ExchangeRate-API** (`https://v6.exchangerate-api.com`) — pro funkci Kalkulačka měny
 
-> ⚠️ **Bezpečnostní upozornění:** API klíče by neměly být commitované do veřejného repozitáře. Před nahráním na GitHub doporučujeme klíče přesunout do proměnných prostředí nebo konfiguračního souboru (např. `appsettings.json` / `.env`), který je v `.gitignore`.
-
 ## Instalace a spuštění
 
 ```bash
-git clone https://github.com/<tvuj-ucet>/<nazev-repa>.git
-cd <nazev-repa>
+git clone https://github.com/tomk1440-cmyk/gargamelctverecekpublic.git
+cd gargamelctverecekpublic
 dotnet run
 ```
 
