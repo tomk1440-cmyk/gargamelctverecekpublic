@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using System.Linq;
 
 // --- Načtení .env souboru ---
 // Když spouštíš přes "dotnet run", aktuální složka je složka projektu (kde je .csproj).
@@ -76,7 +77,7 @@ Console.ReadKey();
 gargamel:
 Console.Clear();
 Console.WriteLine("Vyberte jednu z možností");
-Console.WriteLine("1) Gambling center      2) Kačka Kalkulačka dluhů\n3) Počasí               4) Generátor hesel\n5) Kalkulačka měny      6) Guess the number\n7) Crossy Road          8) Konec");
+Console.WriteLine("1) Blackjack            2) Kačka Kalkulačka dluhů\n3) Počasí               4) Generátor hesel\n5) Kalkulačka měny      6) Guess the number\n7) Crossy Road          8) Konec");
 
 char key = Console.ReadKey(true).KeyChar;
 int input_keyboard = key - '0';
@@ -386,8 +387,46 @@ void Kalkulacka()
 // --- Blackjack ---
 void Blackjack()
 {
+    string soubor = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+        "penize_blackjack.txt"
+    );
+
     string[] jmenaKaret = "A,2,3,4,5,6,7,8,9,10,J,Q,K".Split(',');
     Random r = new Random();
+
+    int SpocitejBody(List<int> karty)
+    {
+        int body = 0;
+        int esa = 0;
+
+        foreach (int karta in karty)
+        {
+            int hodnota = karta % 13;
+
+            if (hodnota == 0)
+            {
+                body += 11;
+                esa++;
+            }
+            else if (hodnota >= 9)
+            {
+                body += 10;
+            }
+            else
+            {
+                body += hodnota + 1;
+            }
+        }
+
+        while (body > 21 && esa > 0)
+        {
+            body -= 10;
+            esa--;
+        }
+
+        return body;
+    }
 
     while (true)
     {
@@ -399,149 +438,154 @@ void Blackjack()
         }
 
         Console.Write($"Konto: {penize} Kč. Vsaď (0 pro konec): ");
-        if (!int.TryParse(Console.ReadLine(), out int sazka) || sazka <= 0 || sazka > penize)
+
+        if (!int.TryParse(Console.ReadLine(), out int sazka) ||
+            sazka <= 0 ||
+            sazka > penize)
         {
             Console.WriteLine("Konec hry.");
             File.WriteAllText(soubor, penize.ToString());
             break;
         }
 
-        List<int> balicek = new List<int>();
-        for (int i = 0; i < 52; i++) balicek.Add(i);
 
-        for (int i = 0; i < 100; i++)
+        List<int> balicek = Enumerable.Range(0, 52).ToList();
+
+        for (int i = 0; i < 200; i++)
         {
-            int p1 = r.Next(52), p2 = r.Next(52);
-            int tmp = balicek[p1];
-            balicek[p1] = balicek[p2];
-            balicek[p2] = tmp;
+            int a = r.Next(52);
+            int b = r.Next(52);
+
+            (balicek[a], balicek[b]) = (balicek[b], balicek[a]);
         }
 
-        List<int> hrac = new List<int> { balicek[0], balicek[1] };
-        List<int> dealer = new List<int> { balicek[2], balicek[3] };
+
+        List<int> hrac = new()
+        {
+            balicek[0],
+            balicek[1]
+        };
+
+        List<int> dealer = new()
+        {
+            balicek[2],
+            balicek[3]
+        };
+
         balicek.RemoveRange(0, 4);
 
-        // --- Tah hráče ---
+
+        // Hráčův tah
         while (true)
         {
-            int soucetHrac = 0, esaHrac = 0;
-            foreach (int c in hrac)
-            {
-                int v = c % 13;
-                soucetHrac += v == 0 ? 11 : (v >= 9 ? 10 : v + 1);
-                if (v == 0) esaHrac++;
-            }
-            while (soucetHrac > 21 && esaHrac > 0) { soucetHrac -= 10; esaHrac--; }
+            int body = SpocitejBody(hrac);
 
-            if (soucetHrac >= 21) break;
+            if (body >= 21)
+                break;
 
-            Console.Write($"Dealer: [{jmenaKaret[dealer[0] % 13]}] [??] ");
+
+            Console.WriteLine();
+            Console.Write($"Dealer: [{jmenaKaret[dealer[0] % 13]}] [??]");
+
             Console.WriteLine();
             Console.Write("Hráč: ");
-            foreach (int c in hrac) Console.Write($"[{jmenaKaret[c % 13]}] ");
-            Console.WriteLine($"(Body: {soucetHrac})");
 
-            Console.Write("\n[h]it / [s]tand: ");
-            string tah = Console.ReadLine();
-            if (tah != "h") break;
+            foreach (int karta in hrac)
+            {
+                Console.Write($"[{jmenaKaret[karta % 13]}] ");
+            }
+
+            Console.WriteLine($"({body})");
+
+
+            Console.Write("[h]it / [s]tand: ");
+
+            if (Console.ReadLine() != "h")
+                break;
+
 
             hrac.Add(balicek[0]);
             balicek.RemoveAt(0);
         }
 
-        int souPHrac = 0, esaP = 0;
-        foreach (int c in hrac)
+
+        int bodyHrac = SpocitejBody(hrac);
+
+
+        // Dealer
+        while (SpocitejBody(dealer) < 17)
         {
-            int v = c % 13;
-            souPHrac += v == 0 ? 11 : (v >= 9 ? 10 : v + 1);
-            if (v == 0) esaP++;
-        }
-        while (souPHrac > 21 && esaP > 0) { souPHrac -= 10; esaP--; }
-
-        // --- Tah dealera ---
-        if (souPHrac <= 21)
-        {
-            while (true)
-            {
-                int souD = 0, esaD = 0;
-                foreach (int c in dealer)
-                {
-                    int v = c % 13;
-                    souD += v == 0 ? 11 : (v >= 9 ? 10 : v + 1);
-                    if (v == 0) esaD++;
-                }
-                while (souD > 21 && esaD > 0) { souD -= 10; esaD--; }
-
-                if (souD >= 17) break;
-
-                dealer.Add(balicek[0]);
-                balicek.RemoveAt(0);
-            }
+            dealer.Add(balicek[0]);
+            balicek.RemoveAt(0);
         }
 
-        int souFDealer = 0, esaFD = 0;
-        foreach (int c in dealer)
-        {
-            int v = c % 13;
-            souFDealer += v == 0 ? 11 : (v >= 9 ? 10 : v + 1);
-            if (v == 0) esaFD++;
-        }
-        while (souFDealer > 21 && esaFD > 0) { souFDealer -= 10; esaFD--; }
 
-        // --- Výpis ---
+        int bodyDealer = SpocitejBody(dealer);
+
+
+        Console.WriteLine();
+
         Console.Write("Dealer: ");
-        foreach (int c in dealer) Console.Write($"[{jmenaKaret[c % 13]}] ");
-        Console.WriteLine($"(Body: {souFDealer})");
+        foreach (int karta in dealer)
+        {
+            Console.Write($"[{jmenaKaret[karta % 13]}] ");
+        }
+
+        Console.WriteLine($"({bodyDealer})");
+
 
         Console.Write("Hráč: ");
-        foreach (int c in hrac) Console.Write($"[{jmenaKaret[c % 13]}] ");
-        Console.WriteLine($"(Body: {souPHrac})");
-
-        bool prohral = false;
-
-        if (souPHrac > 21)
+        foreach (int karta in hrac)
         {
-            Console.WriteLine($"-{sazka} Kč");
-            penize -= sazka;
-            prohral = true;
+            Console.Write($"[{jmenaKaret[karta % 13]}] ");
         }
-        else if (souFDealer > 21 || souPHrac > souFDealer)
+
+        Console.WriteLine($"({bodyHrac})");
+
+
+        if (bodyHrac > 21)
+        {
+            Console.WriteLine($"Prohra -{sazka} Kč");
+            penize -= sazka;
+        }
+        else if (bodyDealer > 21 || bodyHrac > bodyDealer)
         {
             Console.WriteLine($"+{sazka} Kč");
             penize += sazka;
         }
-        else if (souPHrac < souFDealer)
+        else if (bodyHrac < bodyDealer)
         {
-            Console.WriteLine($"-{sazka} Kč");
+            Console.WriteLine($"Prohra -{sazka} Kč");
             penize -= sazka;
-            prohral = true;
         }
         else
         {
             Console.WriteLine("Remíza");
         }
 
+
+        // Bezpečné uložení
         File.WriteAllText(soubor, penize.ToString());
 
-        if (prohral)
-        {
-            if (penize <= 0)
-            {
-                Console.WriteLine("\nDošly ti peníze. Konec hry.");
-                break;
-            }
 
-            Console.Write("\nProhrál jsi. Stiskni 1 pro pokračování, cokoliv jiného pro konec: ");
-            string volba = Console.ReadLine();
-            if (volba != "1")
-            {
-                Console.WriteLine("Konec hry.");
-                break;
-            }
+        if (penize <= 0)
+        {
+            Console.WriteLine("Došly ti peníze.");
+            break;
         }
+
+
+        Console.Write("\nPokračovat? (1 = ano): ");
+
+        if (Console.ReadLine() != "1")
+            break;
     }
 
-    Console.WriteLine("\nKonečný stav peněz: " + penize + " Kč (uloženo do souboru " + soubor + ")");
-    Console.WriteLine("Stiskněte klávesu pro návrat do menu...");
+
+    Console.WriteLine();
+    Console.WriteLine($"Konečný stav peněz: {penize} Kč");
+    Console.WriteLine($"Uloženo: {soubor}");
+
+    Console.WriteLine("Stiskni klávesu...");
     Console.ReadKey(true);
 }
